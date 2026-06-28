@@ -1,0 +1,11 @@
+game,agent_a,agent_b,a_starts,winner,avg_time_p1,avg_time_p2,nodes_p1,nodes_p2
+0,Minimax_AB,RandomAgent,True,Minimax_AB,0.6885099333400527,0.0,20325,0
+1,Minimax_AB,RandomAgent,False,Minimax_AB,0.0,0.07919303327798843,0,2756
+0,Minimax_AB,Stratagem,True,Stratagem,0.6988001000136137,0.0,20220,0
+1,Minimax_AB,Stratagem,False,Stratagem,0.0,0.07795289997011423,0,2164
+0,Expectimax,RandomAgent,True,Expectimax,3.1616134999785572,0.0,118972,0
+1,Expectimax,RandomAgent,False,RandomAgent,0.0,1.6363172665393602,0,56953
+0,Expectimax,Stratagem,True,Stratagem,6.263414700049907,0.0,117244,0
+1,Expectimax,Stratagem,False,Stratagem,0.0,3.3709923001006246,0,46291
+0,Minimax_AB,Minimax_NoAB,True,Minimax_AB,0.6842972666490823,1.99566534999758,19766,49909
+1,Minimax_AB,Minimax_NoAB,False,Minimax_NoAB,4.284925866639242,0.1866032499819994,125752,4257
