@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Entornos virtuales (Poetry)
+.venv/
+
+# Artefactos generados por los experimentos (regenerables con train.py).
+# Se entregan en el .zip final, no se versionan.
+MountainCarContinuous/models/*.pkl
+MountainCarContinuous/results/*.json
+MountainCarContinuous/plots/*.png
