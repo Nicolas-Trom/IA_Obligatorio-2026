@@ -109,6 +109,50 @@ def plot_comparar(names, out, titulo, labels=None):
     return out
 
 
+def plot_semillas(names, out, titulo, labels=None, window=100):
+    """Compara configs entrenadas con varias semillas: linea = media entre
+    semillas, banda sombreada = +/- desvio (variabilidad por la suerte)."""
+    labels = labels or names
+    fig, ax = plt.subplots(1, 2, figsize=(12, 4.5))
+
+    for name, label in zip(names, labels):
+        with open(RESULTS_DIR / f"seeds_{name}.json", encoding="utf-8") as fh:
+            r = json.load(fh)
+
+        mean = np.asarray(r["reward_mean"])
+        std = np.asarray(r["reward_std"])
+        xs, m = moving_average(mean, window)
+        _, sd = moving_average(std, window)
+        line, = ax[0].plot(xs, m, lw=2, label=label)
+        ax[0].fill_between(xs, m - sd, m + sd, alpha=0.15, color=line.get_color())
+
+        mean = np.asarray(r["success_mean"]) * 100
+        std = np.asarray(r["success_std"]) * 100
+        xs, m = moving_average(mean, window)
+        _, sd = moving_average(std, window)
+        line, = ax[1].plot(xs, m, lw=2, label=label)
+        ax[1].fill_between(xs, m - sd, m + sd, alpha=0.15, color=line.get_color())
+
+    ax[0].set_title("Recompensa (media de semillas; banda = ±desvío)")
+    ax[0].set_xlabel("episodio")
+    ax[0].set_ylabel("recompensa real")
+    ax[0].legend(fontsize=9)
+
+    ax[1].set_title("Tasa de éxito (media de semillas; banda = ±desvío)")
+    ax[1].set_xlabel("episodio")
+    ax[1].set_ylabel("% de éxito")
+    ax[1].set_ylim(-5, 105)
+    ax[1].legend(fontsize=9)
+
+    fig.suptitle(titulo, fontweight="bold")
+    fig.tight_layout()
+    PLOTS_DIR.mkdir(exist_ok=True)
+    fig.savefig(out, dpi=120)
+    plt.close(fig)
+    print(f"guardado: {out}")
+    return out
+
+
 def main():
     parser = argparse.ArgumentParser(description="Gráficos de resultados LOST.")
     sub = parser.add_subparsers(dest="modo", required=True)
@@ -122,9 +166,17 @@ def main():
     p_cmp.add_argument("--titulo", default="Comparación")
     p_cmp.add_argument("--labels", nargs="+", default=None)
 
+    p_sem = sub.add_parser("semillas", help="comparar configs con varias semillas")
+    p_sem.add_argument("names", nargs="+")
+    p_sem.add_argument("--out", default=str(PLOTS_DIR / "comparacion_semillas.png"))
+    p_sem.add_argument("--titulo", default="Comparación (varias semillas)")
+    p_sem.add_argument("--labels", nargs="+", default=None)
+
     args = parser.parse_args()
     if args.modo == "curva":
         plot_curva(args.name)
+    elif args.modo == "semillas":
+        plot_semillas(args.names, args.out, args.titulo, args.labels)
     else:
         plot_comparar(args.names, args.out, args.titulo, args.labels)
 

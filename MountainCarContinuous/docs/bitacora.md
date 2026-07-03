@@ -273,3 +273,39 @@ receta a fondo (y quizás decenas de miles de episodios), para —en el mejor ca
 **igualar** a la grilla chica, que ya está cerca del techo. La chica "funciona de
 fábrica"; la fina es un pozo de esfuerzo sin premio. **Matiz honesto:** no probamos
 que sea imposible; con ajustes mucho más agresivos podría llegar, pero no vale la pena.
+
+---
+
+## Decisión 8 — Robustez con varias semillas
+
+**Objetivo:** todas las conclusiones anteriores salían de **una sola semilla** (una
+"tirada de dado"). Para ver si eran robustas o casualidad, se repitieron las 4 configs
+de Q-Learning vs Dyna-Q con **5 semillas** cada una (código: `seeds_experiment.py`,
+20 corridas, ~30 min). Gráfico: `plots/comparacion_semillas.png` (media entre semillas
+± desvío).
+
+**Resultado de evaluación (media ± desvío entre 5 semillas):**
+
+| Config | reward eval | éxito eval | semillas fallidas |
+|---|---:|---:|---|
+| Q-Learning (0) | 69.01 ± 46.40 | 0.80 ± 0.40 | **1 de 5** (0% éxito, reward -24) |
+| Dyna-Q 5 | 92.75 ± 0.86 | **1.00 ± 0.00** | ninguna |
+| Dyna-Q 10 | 89.58 ± 3.16 | 0.99 ± 0.02 | ninguna |
+| Dyna-Q 20 | 80.05 ± 21.88 | 0.94 ± 0.12 | 1 de 5 (70% éxito) |
+
+**Conclusiones (importantes, y que una sola semilla ocultaba):**
+- **Q-Learning puro es frágil:** en 1 de 5 semillas quedó con una política rota (0% de
+  éxito en evaluación). Con una sola corrida "afortunada" parecía tan bueno como Dyna-Q;
+  con 5 semillas se ve que **su varianza es enorme** (éxito 0.80 ± 0.40).
+- **Dyna-Q 5 es el más robusto:** 5/5 semillas al 100%, desvío mínimo (±0.86). El
+  beneficio de Dyna-Q **no es solo velocidad, sino confiabilidad**: la experiencia
+  simulada estabiliza el aprendizaje.
+- **Más planning no es más estable:** Dyna-Q 20 también tuvo una semilla mala. El punto
+  justo sigue siendo **planning ≈ 5** (ahora confirmado entre semillas, no por suerte).
+- **Valor de este experimento:** justifica por qué reportar **media ± desvío** y no una
+  sola corrida — cambia la lectura de "todos llegan al 100%" a "Q-Learning puede fallar;
+  Dyna-Q 5 es confiable".
+
+**Impacto en el modelo final:** el modelo entregado `shaped_s5` (Q-Learning, semilla 0)
+funciona (100%), pero esta evidencia sugiere que **Dyna-Q con planning=5 es la receta de
+entrenamiento más confiable**. Se deja documentado para la elección final del informe.
