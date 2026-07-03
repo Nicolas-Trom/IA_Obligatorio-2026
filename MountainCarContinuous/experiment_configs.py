@@ -100,14 +100,22 @@ SMOKE = Config(
     epsilon_decay=0.99,
 )
 
+# Baseline SIN shaping: documenta el fracaso (converge a "no hacer nada").
+BASELINE_SIN_SHAPING = Config(
+    "baseline_sin_shaping",
+    pos_bins=20, vel_bins=20, action_bins=5, episodes=3000, reward_shaping=False,
+)
+
 # --------------------------------------------------------------------- #
-# Variantes de discretizacion (Q-Learning, misma base de hiperparametros).
+# Variantes de discretizacion. Todo igual (shaping incluido) salvo la grilla,
+# para aislar el impacto de la resolucion.
 # --------------------------------------------------------------------- #
+_DISC_COMMON = dict(episodes=3000, reward_shaping=True, shaping_scale=5.0)
 DISCRETIZATION_VARIANTS = [
-    Config("disc_chico",     pos_bins=12, vel_bins=12, action_bins=3),
-    Config("disc_intermedio", pos_bins=20, vel_bins=20, action_bins=5),
-    Config("disc_fino",      pos_bins=30, vel_bins=30, action_bins=7),
-    Config("disc_muy_fino",  pos_bins=40, vel_bins=40, action_bins=9),
+    Config("disc_chico",      pos_bins=12, vel_bins=12, action_bins=3, **_DISC_COMMON),
+    Config("disc_intermedio", pos_bins=20, vel_bins=20, action_bins=5, **_DISC_COMMON),
+    Config("disc_fino",       pos_bins=30, vel_bins=30, action_bins=7, **_DISC_COMMON),
+    Config("disc_muy_fino",   pos_bins=40, vel_bins=40, action_bins=9, **_DISC_COMMON),
 ]
 
 # --------------------------------------------------------------------- #
@@ -124,11 +132,14 @@ HYPERPARAM_GRID = [
 # --------------------------------------------------------------------- #
 # Q-Learning vs Dyna-Q (misma discretizacion e hiperparametros base).
 # --------------------------------------------------------------------- #
+# Todas con la misma discretizacion, hiperparametros y shaping: solo cambia
+# planning_steps, para aislar el efecto de Dyna-Q sobre la velocidad de aprendizaje.
+_PLAN_COMMON = dict(episodes=2000, reward_shaping=True, shaping_scale=5.0)
 PLANNING_VARIANTS = [
-    Config("plan00_qlearning", algo="q_learning"),
-    Config("plan05_dyna", algo="dyna_q", planning_steps=5),
-    Config("plan10_dyna", algo="dyna_q", planning_steps=10),
-    Config("plan20_dyna", algo="dyna_q", planning_steps=20),
+    Config("plan00_qlearning", algo="q_learning", **_PLAN_COMMON),
+    Config("plan05_dyna", algo="dyna_q", planning_steps=5, **_PLAN_COMMON),
+    Config("plan10_dyna", algo="dyna_q", planning_steps=10, **_PLAN_COMMON),
+    Config("plan20_dyna", algo="dyna_q", planning_steps=20, **_PLAN_COMMON),
 ]
 
 
@@ -145,7 +156,7 @@ SHAPING_VARIANTS = [
 
 def _registry() -> dict:
     """Mapa nombre -> Config para seleccionar por linea de comandos."""
-    reg = {SMOKE.name: SMOKE}
+    reg = {SMOKE.name: SMOKE, BASELINE_SIN_SHAPING.name: BASELINE_SIN_SHAPING}
     for group in (DISCRETIZATION_VARIANTS, HYPERPARAM_GRID,
                   PLANNING_VARIANTS, SHAPING_VARIANTS):
         for cfg in group:

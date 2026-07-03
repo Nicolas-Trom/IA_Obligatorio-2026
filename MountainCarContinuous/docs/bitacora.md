@@ -130,3 +130,68 @@ solo guía el aprendizaje) y la **evaluación es sobre el ambiente sin shaping**
 
 **Aprendizaje transferido de Cliff Walking:** el rol del shaping por energía aquí es
 análogo al del -1/paso allá — dar señal densa de progreso.
+
+---
+
+## Decisión 4 — Dyna-Q vs Q-Learning (componente de investigación)
+
+**Objetivo:** ver si Dyna-Q (Sutton & Barto, cap. 8) aprende más rápido que
+Q-Learning por reutilizar experiencia simulada. Dyna-Q guarda cada transición real
+en un modelo `(s,a) → (r, s', terminal)` y, tras cada paso real, hace
+`planning_steps` actualizaciones extra sampleando transiciones ya vistas.
+
+**Montaje:** misma discretización (`20×20×5`), mismos hiperparámetros y shaping
+(escala 5), 2000 episodios. Único cambio: `planning_steps` = 0 (Q-Learning), 5, 10, 20.
+Gráfico: `plots/qlearning_vs_dynaq.png`.
+
+**Resultados:**
+
+| Variante | Episodios ≈ para 100% éxito | Tiempo entren. | reward eval | pasos eval |
+|---|---:|---:|---:|---:|
+| Q-Learning (0) | ~900 | 35 s | 92.00 | 156 |
+| Dyna-Q 5 | ~450 | 53 s | 93.54 | 100 |
+| Dyna-Q 10 | ~500 | 154 s | 91.03 | 141 |
+| Dyna-Q 20 | ~650 | 142 s | 91.78 | 152 |
+
+**Conclusiones:**
+- **Dyna-Q aprende en menos episodios** que Q-Learning puro (converge ~2× antes).
+  Confirma el beneficio del capítulo 8: la experiencia simulada acelera el aprendizaje.
+- **Tradeoff:** ese beneficio se paga en **tiempo de máquina** (planning 10/20 tardan
+  ~4× más en segundos). Como el simulador es barato, en *tiempo de reloj* Q-Learning
+  puro conviene aquí; Dyna-Q rinde cuando la experiencia real es cara.
+- **Más planning no fue mejor:** Dyna-Q 5 fue el más rápido en converger, por encima
+  de 10 y 20. Resultado de **una sola semilla**: hay que confirmarlo repitiendo con
+  varias semillas antes de afirmarlo en el informe.
+- Todas alcanzan 100 % de éxito y reward ~92 en evaluación: el rendimiento final es
+  equivalente; la diferencia está en la **velocidad de aprendizaje**, no en la calidad.
+
+*(Pendiente: repetir con 3-5 semillas para robustez.)*
+
+---
+
+## Decisión 5 — Impacto de la discretización (tarea 1)
+
+**Objetivo:** justificar la elección de la grilla midiendo cómo la resolución
+afecta el aprendizaje. Todo igual (shaping escala 5, α=0.1, γ=0.99, 3000 episodios)
+salvo la cantidad de casilleros. Gráfico: `plots/comparacion_discretizaciones.png`.
+
+| Grilla (pos×vel×acc) | Casilleros | Éxito | reward eval | pasos eval | Tiempo |
+|---|---:|---:|---:|---:|---:|
+| Chico 12×12×3 | 432 | **100 %** | 93.33 | 72 | 46 s |
+| Intermedio 20×20×5 | 2.000 | **100 %** | 92.90 | 154 | 41 s |
+| Fino 30×30×7 | 6.300 | 0 % | -0.02 | 999 | 104 s |
+| Muy fino 40×40×9 | 14.400 | 0 % | 0.00 | 999 | 107 s |
+
+**Conclusiones:**
+- **La resolución fina no aprendió** en 3000 episodios: cuantos más casilleros, más
+  dispersa la tabla y menos visitas por casillero → no llega a llenarse. El "fino"
+  muestra ráfagas de aprendizaje que no sostiene; el "muy fino" queda plano en 0 %.
+- **Las grillas chicas aprenden bien y rápido.** La más chica (12×12×3) fue la más
+  veloz en converger y la que menos pasos usa para llegar (72). Para este problema,
+  el "punto justo" está del lado **grueso**.
+- **Matiz honesto para el informe:** las grillas finas probablemente *sí* aprenderían
+  con muchos más episodios; el hallazgo es "bajo un presupuesto fijo de episodios,
+  más resolución = peor", no "más resolución es imposible".
+- **Elección:** se toma la **intermedia (20×20×5)** como configuración base — buen
+  balance entre resolución y velocidad de aprendizaje — dejando registrado que la
+  chica también rinde muy bien.
