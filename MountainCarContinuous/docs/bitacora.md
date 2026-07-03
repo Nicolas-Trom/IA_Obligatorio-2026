@@ -195,3 +195,34 @@ salvo la cantidad de casilleros. Gráfico: `plots/comparacion_discretizaciones.p
 - **Elección:** se toma la **intermedia (20×20×5)** como configuración base — buen
   balance entre resolución y velocidad de aprendizaje — dejando registrado que la
   chica también rinde muy bien.
+
+---
+
+## Decisión 6 — Grilla de hiperparámetros (tarea 3)
+
+**Objetivo:** justificar la elección de α (tasa de aprendizaje), γ (descuento) y el
+decay de ε (exploración). Grilla chica: se parte de la base (α=0.1, γ=0.99,
+decay=0.999) y se cambia **una perilla por vez**. Todo lo demás igual (20×20×5,
+shaping escala 5, 2000 episodios). Gráfico: `plots/comparacion_hiperparametros.png`.
+
+| Config | Cambio | Éxito | reward eval | pasos |
+|---|---|---:|---:|---:|
+| α=0.05 | α baja | **0 %** | 0.00 | 999 |
+| α=0.10 (base) | — | 100 % | 92.00 | 156 |
+| α=0.20 | α alta | 100 % | 91.11 | 150 |
+| γ=0.95 | γ baja | 100 % (inestable) | 93.32 | 188 |
+| decay lento (0.9995) | ε explora más | 100 % | 90.46 | 158 |
+
+**Conclusiones:**
+- **α es el hiperparámetro más sensible.** Con α=0.05 el paso de actualización es
+  tan chico que **no llega a aprender** en 2000 episodios. Con α=0.10–0.20 converge
+  bien; α=0.20 fue el más rápido en este montaje.
+- **γ=0.99 es importante para la estabilidad.** Con γ=0.95 la curva oscila mucho
+  (sube y baja): al estar el premio (+100) lejos, un descuento más agresivo debilita
+  la propagación del valor y vuelve la política temblorosa.
+- **Explorar de más retrasa:** con decay más lento (ε alto por más tiempo) la
+  convergencia es más lenta, sin mejor resultado final.
+- **Elección final: α=0.10, γ=0.99, decay=0.999** (equilibrio y estabilidad).
+  α=0.20 queda como alternativa algo más rápida.
+
+*(Pendiente: confirmar con varias semillas antes de cerrar la elección en el informe.)*

@@ -121,12 +121,15 @@ DISCRETIZATION_VARIANTS = [
 # --------------------------------------------------------------------- #
 # Grilla chica de hiperparametros sobre la discretizacion intermedia.
 # --------------------------------------------------------------------- #
+# Grilla chica: se parte de la base (alpha=0.1, gamma=0.99, decay=0.999) y se
+# cambia una perilla por vez. Todas con misma grilla y shaping para aislar el efecto.
+_HP_COMMON = dict(episodes=2000, reward_shaping=True, shaping_scale=5.0)
 HYPERPARAM_GRID = [
-    Config("hp_a05_g99", alpha=0.05, gamma=0.99, epsilon_decay=0.999),
-    Config("hp_a10_g99", alpha=0.10, gamma=0.99, epsilon_decay=0.999),
-    Config("hp_a20_g99", alpha=0.20, gamma=0.99, epsilon_decay=0.999),
-    Config("hp_a10_g95", alpha=0.10, gamma=0.95, epsilon_decay=0.999),
-    Config("hp_a10_g99_slow", alpha=0.10, gamma=0.99, epsilon_decay=0.9995),
+    Config("hp_a05_g99", alpha=0.05, gamma=0.99, epsilon_decay=0.999, **_HP_COMMON),
+    Config("hp_a10_g99", alpha=0.10, gamma=0.99, epsilon_decay=0.999, **_HP_COMMON),
+    Config("hp_a20_g99", alpha=0.20, gamma=0.99, epsilon_decay=0.999, **_HP_COMMON),
+    Config("hp_a10_g95", alpha=0.10, gamma=0.95, epsilon_decay=0.999, **_HP_COMMON),
+    Config("hp_a10_g99_slow", alpha=0.10, gamma=0.99, epsilon_decay=0.9995, **_HP_COMMON),
 ]
 
 # --------------------------------------------------------------------- #
