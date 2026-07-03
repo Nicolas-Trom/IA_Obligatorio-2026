@@ -226,3 +226,50 @@ shaping escala 5, 2000 episodios). Gráfico: `plots/comparacion_hiperparametros.
   α=0.20 queda como alternativa algo más rápida.
 
 *(Pendiente: confirmar con varias semillas antes de cerrar la elección en el informe.)*
+
+---
+
+## Decisión 7 — ¿Una grilla más grande mejoraría con más episodios?
+
+**Pregunta:** las grillas finas fallaron con 3000 episodios (Decisión 5). ¿Aprenderían
+—y superarían a la chica— si les damos muchos más episodios? Se probó la más grande,
+`40×40×9` (14.400 casilleros), con **8000 episodios** (2.7× el presupuesto anterior),
+mismos hiperparámetros y shaping. Gráfico: `plots/grilla_grande_8k.png`.
+
+**Resultado:** **siguió dando 0 % de éxito.** El reward volvió a converger a ~0 →
+el agente cayó de nuevo en "no hacer nada". Tiempo: 222 s.
+
+**Diagnóstico:** no fue solo falta de datos. Con `epsilon_decay=0.999`, ε llega a su
+mínimo (0.01) cerca del episodio 4600. En una tabla tan gigante, esa ventana de
+exploración **no alcanzó** para hallar un camino confiable; una vez que ε se congela,
+el agente deja de explorar y queda atrapado en el óptimo local. Los ~3400 episodios
+restantes ya no exploran → no aportan.
+
+**Conclusiones (fuertes para el informe):**
+- **Más episodios por sí solos no arreglan una grilla muy fina.** Habría que re-tunear
+  *toda la receta* (ε que baje más lento, y probablemente muchos más episodios todavía).
+  Es un pozo de esfuerzo para, en el mejor caso, **igualar** a la grilla chica —que ya
+  está cerca del techo de recompensa (~92 de ~100).
+- **La grilla chica "funciona de fábrica"** con los hiperparámetros por defecto; la
+  fina no. Eso justifica preferir la resolución baja/intermedia.
+- **Responde el "¿por qué no una grilla más grande?"** con evidencia: probamos, y no
+  solo no mejora, sino que ni siquiera aprende sin retrabajar la configuración. (Esto
+  también explica por qué un enfoque tipo 100×100×15 *necesita* ~10.000 episodios y
+  ajustes: no es que sea mejor, es que su propia elección de grilla se lo exige.)
+### Segundo intento de rescate: ε que baja más lento
+
+Para responder "¿y si el problema era solo la exploración?", se reentrenó la misma
+`40×40×9` con **ε de decaimiento lento (0.9995, ~2× más exploración)** y **12.000
+episodios**. Gráfico: `plots/grilla_grande_rescate.png`.
+
+**Resultado: siguió en 0 % de éxito.** Hubo destellos de éxito durante la exploración
+temprana (ep. 1200-3600, ~1-2 %), pero **nunca se afirmó una política**; al bajar ε,
+volvió a "no hacer nada" (reward ~0). Tiempo: 256 s.
+
+**Conclusión reforzada:** probamos **dos** arreglos razonables (más episodios; y más
+exploración + más episodios) y **los dos fallaron**. La grilla muy fina no es "un poco
+más cara": es **sustancialmente más difícil de hacer andar**, requiere retrabajar la
+receta a fondo (y quizás decenas de miles de episodios), para —en el mejor caso—
+**igualar** a la grilla chica, que ya está cerca del techo. La chica "funciona de
+fábrica"; la fina es un pozo de esfuerzo sin premio. **Matiz honesto:** no probamos
+que sea imposible; con ajustes mucho más agresivos podría llegar, pero no vale la pena.

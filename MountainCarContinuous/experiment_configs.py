@@ -118,6 +118,23 @@ DISCRETIZATION_VARIANTS = [
     Config("disc_muy_fino",   pos_bins=40, vel_bins=40, action_bins=9, **_DISC_COMMON),
 ]
 
+# Grilla muy fina con presupuesto GRANDE de episodios: para demostrar que, aun
+# dandole muchos mas episodios, no supera a la grilla chica (ver Decision 7).
+DISC_MUY_FINO_8K = Config(
+    "disc_muy_fino_8k",
+    pos_bins=40, vel_bins=40, action_bins=9,
+    episodes=8000, reward_shaping=True, shaping_scale=5.0,
+)
+
+# Grilla muy fina pero explorando MUCHO mas tiempo (epsilon baja mas lento) y con
+# mas episodios: para ver si el problema era exploracion y no imposibilidad (Decision 7).
+DISC_MUY_FINO_EXPLORA = Config(
+    "disc_muy_fino_explora",
+    pos_bins=40, vel_bins=40, action_bins=9,
+    episodes=12000, reward_shaping=True, shaping_scale=5.0,
+    epsilon_decay=0.9995,
+)
+
 # --------------------------------------------------------------------- #
 # Grilla chica de hiperparametros sobre la discretizacion intermedia.
 # --------------------------------------------------------------------- #
@@ -159,7 +176,12 @@ SHAPING_VARIANTS = [
 
 def _registry() -> dict:
     """Mapa nombre -> Config para seleccionar por linea de comandos."""
-    reg = {SMOKE.name: SMOKE, BASELINE_SIN_SHAPING.name: BASELINE_SIN_SHAPING}
+    reg = {
+        SMOKE.name: SMOKE,
+        BASELINE_SIN_SHAPING.name: BASELINE_SIN_SHAPING,
+        DISC_MUY_FINO_8K.name: DISC_MUY_FINO_8K,
+        DISC_MUY_FINO_EXPLORA.name: DISC_MUY_FINO_EXPLORA,
+    }
     for group in (DISCRETIZATION_VARIANTS, HYPERPARAM_GRID,
                   PLANNING_VARIANTS, SHAPING_VARIANTS):
         for cfg in group:
