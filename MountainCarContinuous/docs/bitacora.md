@@ -309,3 +309,31 @@ de Q-Learning vs Dyna-Q con **5 semillas** cada una (código: `seeds_experiment.
 **Impacto en el modelo final:** el modelo entregado `shaped_s5` (Q-Learning, semilla 0)
 funciona (100%), pero esta evidencia sugiere que **Dyna-Q con planning=5 es la receta de
 entrenamiento más confiable**. Se deja documentado para la elección final del informe.
+
+---
+
+## Decisión 9 — Modelo final y su verificación
+
+**Verificación ampliada:** se evaluó el modelo entregable `shaped_s5` (Q-Learning,
+`20×20×5`, shaping escala 5) sobre **200 arranques distintos** (no solo 20):
+
+| Métrica | Valor |
+|---|---|
+| Tasa de éxito | **1.00 (200/200, cero fallas)** |
+| Reward medio | 93.45 ± 0.42 |
+| Reward peor / mejor | 92.15 / 94.00 |
+| Pasos medios | 148 |
+
+Incluso el peor arranque llegó a la meta con reward 92.15. El modelo, ya entrenado,
+es **consistente y confiable al usarlo** (la variación mínima viene solo de la posición
+inicial aleatoria del auto). *Distinto* de la fragilidad de la Decisión 8, que era sobre
+**re-entrenar** desde cero, no sobre usar esta tabla ya verificada.
+
+**Elección para el informe (entregar ambos modelos):**
+- **`shaped_s5`** — resultado de la **técnica principal** (Q-Learning, tarea 2);
+  verificado 100% en 200 episodios.
+- **Dyna-Q 5** (`plan05_dyna`) — resultado de la **investigación** (tarea 4); la receta
+  más **robusta** entre semillas (Decisión 8).
+
+Así se cubren las dos tareas y se muestra el matiz completo: mismo rendimiento final,
+pero Dyna-Q 5 aporta mayor confiabilidad de entrenamiento.
