@@ -12,7 +12,8 @@ from random_agent import RandomAgent
 from stratagem import Stratagem
 
 DEPTH = 3
-N_GAMES = 30
+N_GAMES_RANDOM = 30
+N_GAMES_STRATAGEM = 100
 
 CONFIGS = {
     "balanceado":     {"relative_mobility": 1.0, "center_control": 0.25, "corner_rival": 0.5},
@@ -33,7 +34,7 @@ if __name__ == "__main__":
         t0 = time.time()
         rows_rand = run_tournament(
             factory, lambda p: RandomAgent(p),
-            n_games=N_GAMES, seed=42,
+            n_games=N_GAMES_RANDOM, seed=42,
             label_a=config_name, label_b="RandomAgent"
         )
         wr_rand = win_rate(rows_rand, config_name)
@@ -43,7 +44,7 @@ if __name__ == "__main__":
         t0 = time.time()
         rows_strat = run_tournament(
             factory, lambda p: Stratagem(p),
-            n_games=N_GAMES, seed=42,
+            n_games=N_GAMES_STRATAGEM, seed=42,
             label_a=config_name, label_b="Stratagem"
         )
         wr_strat = win_rate(rows_strat, config_name)
