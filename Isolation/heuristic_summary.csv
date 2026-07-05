@@ -1,0 +1,6 @@
+config,weights,wr_vs_random,wr_vs_stratagem
+balanceado,"{'relative_mobility': 1.0, 'center_control': 0.25, 'corner_rival': 0.5}",0.9666666666666667,0.48
+agresivo,"{'relative_mobility': 0.5, 'center_control': 0.0, 'corner_rival': 2.0}",1.0,0.6
+posicional,"{'relative_mobility': 0.5, 'center_control': 2.0, 'corner_rival': 0.0}",1.0,0.7
+movilidad_pura,"{'relative_mobility': 2.0, 'center_control': 0.0, 'corner_rival': 0.0}",1.0,0.58
+mixto,"{'relative_mobility': 1.0, 'center_control': 1.0, 'corner_rival': 1.0}",1.0,0.59
