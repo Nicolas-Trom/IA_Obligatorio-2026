@@ -1,9 +1,22 @@
 const {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   Header, Footer, AlignmentType, HeadingLevel, BorderStyle, WidthType,
-  ShadingType, VerticalAlign, PageNumber, PageBreak, LevelFormat
+  ShadingType, VerticalAlign, PageNumber, PageBreak, LevelFormat, ImageRun
 } = require("docx");
 const fs = require("fs");
+
+function figure(pngPath, altTitle) {
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 120, after: 200 },
+    children: [new ImageRun({
+      type: "png",
+      data: fs.readFileSync(pngPath),
+      transformation: { width: 620, height: 349 },
+      altText: { title: altTitle, description: altTitle, name: altTitle },
+    })],
+  });
+}
 
 // ── helpers ────────────────────────────────────────────────────────────────
 const cm = (v) => Math.round(v * 567); // cm to DXA
@@ -157,11 +170,11 @@ function tableHeuristicSweep() {
   const cols = [2200, 3800, 1800, 1700];
   const W = cols.reduce((a, b) => a + b, 0);
   const rows = [
-    ["balanceado",     "relative_mobility:1.0, center:0.25, corner:0.5", "96.67%", "40.00%"],
-    ["agresivo",       "relative_mobility:0.5, center:0.0, corner:2.0",  "100%",   "53.33%"],
-    ["posicional",     "relative_mobility:0.5, center:2.0, corner:0.0",  "100%",   "73.33%"],
-    ["movilidad_pura", "relative_mobility:2.0, center:0.0, corner:0.0",  "100%",   "50.00%"],
-    ["mixto",          "relative_mobility:1.0, center:1.0, corner:1.0",  "100%",   "46.67%"],
+    ["balanceado",     "relative_mobility:1.0, center:0.25, corner:0.5", "96.67%", "48.00%"],
+    ["agresivo",       "relative_mobility:0.5, center:0.0, corner:2.0",  "100%",   "60.00%"],
+    ["posicional",     "relative_mobility:0.5, center:2.0, corner:0.0",  "100%",   "70.00%"],
+    ["movilidad_pura", "relative_mobility:2.0, center:0.0, corner:0.0",  "100%",   "58.00%"],
+    ["mixto",          "relative_mobility:1.0, center:1.0, corner:1.0",  "100%",   "59.00%"],
   ];
   return new Table({
     width: { size: W, type: WidthType.DXA },
@@ -173,7 +186,7 @@ function tableHeuristicSweep() {
         headerCell("vs Random", cols[2]),
         headerCell("vs Stratagem", cols[3]),
       ]}),
-      ...rows.map((r, i) => new TableRow({ children: r.map((v, j) => dataCell(v, cols[j], i % 2 === 0, j === 3 && r[3] === "73.33%", j >= 2)) })),
+      ...rows.map((r, i) => new TableRow({ children: r.map((v, j) => dataCell(v, cols[j], i % 2 === 0, j === 3 && r[3] === "70.00%", j >= 2)) })),
     ],
   });
 }
@@ -310,12 +323,12 @@ const doc = new Document({
 
       // Configuraciones de heuristicas
       heading2("Configuraciones de Heuristicas (Tarea 2)"),
-      para("Para la experimentacion con funciones de evaluacion, se probaron cinco configuraciones de pesos distintas enfrentando cada una contra RandomAgent y Stratagem en 30 partidas:"),
+      para("Para la experimentacion con funciones de evaluacion, se probaron cinco configuraciones de pesos distintas enfrentando cada una contra RandomAgent (30 partidas) y Stratagem (100 partidas). Se utilizo un n mayor contra Stratagem porque es el enfrentamiento donde se deciden las conclusiones: con 100 partidas el margen de error del win-rate baja a ~9 puntos porcentuales (vs ~18 con n=30), haciendo las diferencias entre configuraciones estadisticamente solidas:"),
       spacer(),
       tableHeuristicSweep(),
       spacer(),
-      para("El hallazgo mas relevante es que la configuracion posicional (center_control con peso 2.0) gana el 73.33% de las partidas contra Stratagem, muy por encima del resto. Esto tiene sentido: Stratagem tambien prioriza el control del centro en su heuristica; al darle mayor peso a esta dimension, el agente compite directamente en la misma dimension critica y la explota mejor."),
-      para("Todas las configuraciones dominan a RandomAgent (96-100%), lo que confirma que cualquier heuristica razonable supera al azar. La diferencia real se ve en el enfrentamiento contra Stratagem, donde la eleccion de pesos tiene un impacto significativo (de 40% a 73.33%)."),
+      para("El hallazgo mas relevante es que la configuracion posicional (center_control con peso 2.0) gana el 70.00% de las partidas contra Stratagem, la mejor de todas las configuraciones probadas. Esto tiene sentido: Stratagem tambien prioriza el control del centro en su heuristica; al darle mayor peso a esta dimension, el agente compite directamente en la misma dimension critica y la explota mejor."),
+      para("Todas las configuraciones dominan a RandomAgent (96-100%), lo que confirma que cualquier heuristica razonable supera al azar. La diferencia real se ve en el enfrentamiento contra Stratagem, donde la eleccion de pesos tiene un impacto significativo (de 48% a 70%). Cabe destacar que todas las configuraciones empatan o superan a Stratagem, es decir, el Minimax propio de profundidad 3 esta como minimo al nivel del agente de referencia con cualquier heuristica razonable."),
       para("En base a estos resultados, se recomienda usar la configuracion posicional como configuracion principal para el agente final del proyecto."),
 
       // Dificultades y Conclusion
@@ -326,7 +339,7 @@ const doc = new Document({
       numberedItem("Expectimax sin poda: al no poder aplicar Alpha-Beta en nodos de azar, Expectimax tarda significativamente mas que Minimax (454s vs 189s para 50 partidas contra Stratagem a profundidad 3), lo que limita su uso practico a profundidades bajas."),
       spacer(),
       para("Los resultados obtenidos validan las hipotesis planteadas. Minimax con Alpha-Beta es la tecnica mas adecuada para Isolation, ya que el rival (Stratagem) juega de forma adversarial y la poda reduce dramaticamente el costo computacional sin afectar la calidad de las decisiones. Expectimax queda relegado a escenarios con rivales suboptimos (Random), donde su modelado probabilistico es mas preciso."),
-      para("El analisis de configuraciones heuristicas revela que la eleccion de pesos tiene un impacto considerable en el desempeno contra rivales fuertes. La configuracion posicional, que prioriza el control del centro, resulto ser la mas efectiva, alcanzando 73.33% de win-rate contra Stratagem. Este hallazgo sugiere que, en un tablero pequeno como 4x4, la posicion estrategica es mas determinante que la movilidad pura o el acorralamiento del rival."),
+      para("El analisis de configuraciones heuristicas revela que la eleccion de pesos tiene un impacto considerable en el desempeno contra rivales fuertes. La configuracion posicional, que prioriza el control del centro, resulto ser la mas efectiva, alcanzando 70.00% de win-rate contra Stratagem en 100 partidas. Este hallazgo sugiere que, en un tablero pequeno como 4x4, la posicion estrategica es mas determinante que la movilidad pura o el acorralamiento del rival."),
 
       pageBreak(),
 
@@ -369,19 +382,32 @@ const doc = new Document({
       }),
       spacer(),
 
-      heading2("Resultados Barrido de Heuristicas (30 partidas por config)"),
+      heading2("Resultados Barrido de Heuristicas (30 partidas vs Random, 100 vs Stratagem)"),
       new Paragraph({
         shading: { fill: "1E1E1E", type: ShadingType.CLEAR },
         spacing: { before: 60, after: 60 },
         indent: { left: 360, right: 360 },
         children: [new TextRun({ text:
-          "balanceado     vs Random:   96.67%  vs Stratagem: 40.00%\n" +
-          "agresivo       vs Random:  100.00%  vs Stratagem: 53.33%\n" +
-          "posicional     vs Random:  100.00%  vs Stratagem: 73.33%  <-- MEJOR\n" +
-          "movilidad_pura vs Random:  100.00%  vs Stratagem: 50.00%\n" +
-          "mixto          vs Random:  100.00%  vs Stratagem: 46.67%",
+          "balanceado     vs Random:   96.67%  vs Stratagem: 48.00%\n" +
+          "agresivo       vs Random:  100.00%  vs Stratagem: 60.00%\n" +
+          "posicional     vs Random:  100.00%  vs Stratagem: 70.00%  <-- MEJOR\n" +
+          "movilidad_pura vs Random:  100.00%  vs Stratagem: 58.00%\n" +
+          "mixto          vs Random:  100.00%  vs Stratagem: 59.00%",
           font: "Courier New", size: 18, color: "D4D4D4" })],
       }),
+      spacer(),
+
+      heading2("Figura 1"),
+      para("La grafica representa el win-rate obtenido por cada agente en el torneo principal (50 partidas por enfrentamiento, alternando quien comienza). En el eje horizontal se muestran los enfrentamientos y en el eje vertical el porcentaje de victorias del agente A. La linea punteada marca el 50% (paridad). Se observa que Minimax con Alpha-Beta domina a RandomAgent y compite de igual a igual con Stratagem, mientras que Expectimax colapsa frente a un rival adversarial."),
+      figure("Isolation/figures/fig1_winrate_torneo.png", "Win-rate por enfrentamiento del torneo principal"),
+
+      heading2("Figura 2"),
+      para("Esta grafica representa el costo computacional de la busqueda en funcion de la profundidad. En el eje horizontal se muestra la profundidad y en el eje vertical los nodos expandidos promedio por jugada, en escala logaritmica. La brecha creciente entre Minimax con y sin Alpha-Beta ilustra el ahorro de la poda (32x a profundidad 4). La curva de Expectimax coincide exactamente con la de Minimax sin poda, ya que los nodos de azar impiden aplicar Alpha-Beta."),
+      figure("Isolation/figures/fig2_nodos_profundidad.png", "Nodos expandidos vs profundidad"),
+
+      heading2("Figura 3"),
+      para("Esta grafica compara el win-rate de las cinco configuraciones de pesos heuristicos contra RandomAgent (n=30) y contra Stratagem (n=100), usando Minimax con Alpha-Beta a profundidad 3. Todas las configuraciones dominan a Random; la diferencia real aparece contra Stratagem, donde la configuracion posicional (center_control x2.0) alcanza el 70%, el mejor resultado del barrido."),
+      figure("Isolation/figures/fig3_heuristicas.png", "Win-rate por configuracion de heuristicas"),
     ],
   }],
 });

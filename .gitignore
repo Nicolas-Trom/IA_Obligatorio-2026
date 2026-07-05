@@ -3,3 +3,4 @@ __pycache__/
 .venv/
 *.docx
 ~$*
+Isolation/figures/
